@@ -56,7 +56,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ${NAME_SHORT}.tapp
+          files: tools.tapp
           tag_name: v${{ github.event.inputs.version }}
           generate_release_notes: true
 
