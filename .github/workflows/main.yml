@@ -1,0 +1,67 @@
+name: Version and Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version'
+        required: true
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      NAME: ${{ github.event.repository.name }}
+      NAME_SHORT: tools
+      ORG: ${{ github.repository_owner }}
+      REBRANDLY_API_KEY: ${{ secrets.REBRANDLY_API_KEY }}
+      LINK_ID: c1a97c998c4741168e97a2fa31384551
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Tools
+        run: |
+          pip install tappack
+
+      - name: Increment Version
+        run: |
+          git config --global user.name 'Frontmatter Actions'
+          git config --global user.email 'actions@frontmatter.ai'
+          
+          echo -n ${VERSION} > version
+          python3 update_version.py ${VERSION}
+          
+          tappack --module-path module/ --tapp-path ./${NAME_SHORT}.tapp
+          
+          git add version
+          git add module/${NAME_SHORT}_constants.be
+          git add README.md
+          git add ${NAME_SHORT}.tapp
+          
+          git commit -am "Increment version number to ${VERSION} for release"
+          git push          
+          git tag -a v${VERSION} -m "Release version ${VERSION}"
+          
+          git checkout --track origin/release
+          git rebase main
+          
+          git push --follow-tags
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${NAME_SHORT}.tapp
+          tag_name: v${{ github.event.inputs.version }}
+          generate_release_notes: true
+
+      - name: Update Link
+        run: |
+          URL=https://github.com/${ORG}/${NAME}/releases/download/v${VERSION}/${NAME_SHORT}.tapp
+          DATA="{\"destination\": \"${URL}\"}"
+          curl --request POST --url https://api.rebrandly.com/v1/links/${LINK_ID} --header 'accept: application/json' --header "apikey: ${REBRANDLY_API_KEY}" --header 'content-type: application/json' --data "$DATA" &> /dev/null
