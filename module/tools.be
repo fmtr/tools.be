@@ -18,6 +18,14 @@ def get_mac()
     raise "Couldn't get MAC address"
 end
 
+def get_mac_short()
+    return string.split(string.tolower(get_mac()),':').concat()
+end
+
+def get_mac_last_six()
+    return string.replace(string.split(get_mac(),':',3)[3],':','')
+end
+
 def get_device_name()
     var device_name=tasmota.cmd('DeviceName').find('DeviceName')
     if !device_name
@@ -137,6 +145,9 @@ var mod = module(constants.NAME)
 mod.VERSION=constants.VERSION
 
 mod.get_mac=get_mac
+mod.get_mac_short=get_mac_short
+mod.get_mac_last_six=get_mac_last_six
+
 mod.get_device_name=get_device_name
 
 mod.to_bool=to_bool
@@ -153,6 +164,8 @@ mod.set_default=set_default
 mod.reverse_map=reverse_map
 mod.get_keys=get_keys
 mod.update_map=update_map
+
+
 
 log("TLS: Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
 
