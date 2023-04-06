@@ -41,7 +41,7 @@ def read_url(url, retries)
     if status==200
         return client.get_string()
     else
-        log_hct(string.format('Error reading "%s". Code %s', url, status))
+        log(string.format('TLS: Error reading "%s". Code %s', url, status))
         return false
     end
 
