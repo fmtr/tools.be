@@ -141,6 +141,31 @@ def update_map(data,data_update)
     return data
 end
 
+def get_current_version_tasmota()
+
+    import string
+
+    var version_current=tasmota.cmd('status 2').find('StatusFWR',{}).find('Version','Unknown')
+    var tas_seps=['(tasmota32)','(tasmota)']
+
+    var sep
+    for tas_sep: tas_seps
+        if string.find(version_current,tas_sep)>=0
+            sep=tas_sep
+        end
+    end
+
+    if sep==nil
+        return version_current
+    end
+
+    var mmp=string.split(version_current,sep)[0]
+    var build=string.replace(string.replace(sep,'(',''),')','')
+
+    return string.format("%s+%s", mmp, build)
+
+end
+
 var mod = module(constants.NAME)
 mod.VERSION=constants.VERSION
 
@@ -165,7 +190,7 @@ mod.reverse_map=reverse_map
 mod.get_keys=get_keys
 mod.update_map=update_map
 
-
+mod.get_current_version_tasmota=get_current_version_tasmota
 
 log("TLS: Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
 
