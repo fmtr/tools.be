@@ -69,10 +69,6 @@ def download_url(url, file_path, retries)
     end
 end
 
-
-#########
-
-
 def get_topic()
     var topic=tasmota.cmd('topic').find('Topic')
     if !topic
