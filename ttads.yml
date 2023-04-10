@@ -1,4 +1,0 @@
-name: tools
-path: module
-version_updates:
-  tools_constants.be: var\s+VERSION\s*=\s*'({version})'

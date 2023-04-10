@@ -1,1 +1,8 @@
 name: tools
+
+patches:
+  - .channels:
+      development:
+        .type: Version
+        path: tools_constants.be
+        pattern: \bvar\s+VERSION\s*=\s*'{version}'
