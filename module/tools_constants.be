@@ -1,4 +1,4 @@
-var VERSION='0.0.9'
+var VERSION='0.0.10'
 
 var mod = module("tools_constants")
 mod.VERSION=VERSION
