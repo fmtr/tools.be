@@ -1,17 +1,52 @@
-import tools_constants as constants
 import string
+import tools_constants as constants
 
-var MAC_EMPTY='00:00:00:00:00:00'
+def get_logger(name)
+
+    def logger(message)
+        log(string.format('%s: %s',string.toupper(name),message))
+    end
+
+    return logger
+
+end
+
+var log_tools=get_logger(constants.NAME_SHORT)
+
+def get_logger_default(logger)
+    return logger?logger:log_tools
+end
+
+
+def logger_debug(logger, messages, is_debug)
+
+    if !is_debug
+        return
+    end
+
+    if classname(messages)!='list'
+        messages=[messages]
+    end
+
+    messages=messages.concat(' ')
+
+    logger(messages)
+
+    var timestamp=tasmota.cmd('Time').find('Time')
+    
+    print(string.format('%s: %s',timestamp, messages))
+
+end
 
 def get_mac()
 
     var status_net=tasmota.cmd('status 5').find('StatusNET',{})
-    var mac_wifi=status_net.find('Mac', MAC_EMPTY)
-    var mac_ethernet=status_net.find('Ethernet', {}).find('Mac', MAC_EMPTY)
+    var mac_wifi=status_net.find('Mac', constants.MAC_EMPTY)
+    var mac_ethernet=status_net.find('Ethernet', {}).find('Mac', constants.MAC_EMPTY)
 
-    if [MAC_EMPTY,nil].find(mac_wifi)==nil
+    if [constants.MAC_EMPTY,nil].find(mac_wifi)==nil
         return mac_wifi
-    elif [MAC_EMPTY,nil].find(mac_ethernet)==nil
+    elif [constants.MAC_EMPTY,nil].find(mac_ethernet)==nil
         return mac_ethernet
     end
 
@@ -42,7 +77,9 @@ def from_bool(value)
   return to_bool(value)?constants.ON:constants.OFF
 end
 
-def read_url(url, retries)
+def read_url(url, retries, logger)
+
+    logger=get_logger_default(logger)
 
     var client = webclient()
     client.begin(url)
@@ -50,7 +87,7 @@ def read_url(url, retries)
     if status==200
         return client.get_string()
     else
-        log(string.format('TLS: Error reading "%s". Code %s', url, status))
+        logger(string.format('Error reading "%s". Code %s', url, status))
         return false
     end
 
@@ -65,7 +102,7 @@ def download_url(url, file_path, retries)
         return true
     except .. as exception
 
-        log(['Error downloading URL',str(url),':',str(exception),'.',' Retries remaining: ',str(retries)].concat(''))
+        log(string.format('Error downloading URL "%s" (Code: %s). Retries remaining: %s.', url, exception, retries))        
 
         retries-=1
         if !retries
@@ -162,12 +199,57 @@ def get_current_version_tasmota()
     var mmp=string.split(version_current,sep)[0]
     var build=string.replace(string.replace(sep,'(',''),')','')
 
-    return string.format("%s+%s", mmp, build)
+    return string.format("%s", mmp)
 
 end
 
+def update_tapp(name, url,path_module, logger)
+
+    logger=get_logger_default(logger)
+
+    logger(string.format('Starting %s update...', name))
+
+    var is_download_success=download_url(url,path_module)
+    if is_download_success
+        logger(string.format('Download %s update succeeded. Restarting...', name))
+        tasmota.cmd('restart 1')        
+        return true
+    else
+        logger(string.format('Download %s update failed.', name))
+        return false
+    end    
+
+end
+
+def get_latest_version(org,repo,logger)    
+
+    logger=get_logger_default(logger)
+
+
+    logger(string.format('Fetching %s/%s latest version...', org, repo))
+
+    var url=string.format(
+        'https://europe-west2-extreme-flux-351112.cloudfunctions.net/get_github_latest_release_version?org=%s&repo=%s',
+        org,
+        repo
+    )
+
+    var version=read_url(url)
+    if version
+        return version
+    else
+        logger(string.format('Failed reading %s/%s latest version from URL "%s".', org, repo, url))
+        return false
+    end
+
+end
+
+
 var mod = module(constants.NAME)
 mod.VERSION=constants.VERSION
+
+mod.get_logger=get_logger
+mod.logger_debug=logger_debug
 
 mod.get_mac=get_mac
 mod.get_mac_short=get_mac_short
@@ -190,6 +272,9 @@ mod.reverse_map=reverse_map
 mod.get_keys=get_keys
 mod.update_map=update_map
 
+mod.update_tapp=update_tapp
+
+mod.get_latest_version=get_latest_version
 mod.get_current_version_tasmota=get_current_version_tasmota
 
 log("TLS: Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
