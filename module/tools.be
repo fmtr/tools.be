@@ -1,5 +1,6 @@
 import string
 import tools_constants as constants
+import tools_converter as converter
 
 def get_logger(name)
 
@@ -67,14 +68,6 @@ def get_device_name()
         raise "Couldn't get device name"
     end
     return device_name
-end
-
-def to_bool(value)
-  return [str(true),str(1),string.tolower(constants.ON)].find(string.tolower(str(value)))!=nil
-end
-
-def from_bool(value)
-  return to_bool(value)?constants.ON:constants.OFF
 end
 
 def read_url(url, retries, logger)
@@ -257,8 +250,7 @@ mod.get_mac_last_six=get_mac_last_six
 
 mod.get_device_name=get_device_name
 
-mod.to_bool=to_bool
-mod.from_bool=from_bool
+mod.converter=converter
 
 mod.read_url=read_url
 mod.download_url=download_url
