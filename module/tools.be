@@ -277,6 +277,10 @@ mod.update_tapp=update_tapp
 mod.get_latest_version=get_latest_version
 mod.get_current_version_tasmota=get_current_version_tasmota
 
-log("TLS: Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
+def autoexec()
+    log_tools("Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
+end
+
+mod.autoexec=autoexec
 
 return mod
