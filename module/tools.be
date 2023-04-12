@@ -2,43 +2,7 @@ import string
 import tools_constants as constants
 import tools_converter as converter
 import tools_tuya as tuya
-
-def get_logger(name)
-
-    def logger(message)
-        log(string.format('%s: %s',string.toupper(name),message))
-    end
-
-    return logger
-
-end
-
-var log_tools=get_logger(constants.NAME_SHORT)
-
-def get_logger_default(logger)
-    return logger?logger:log_tools
-end
-
-
-def logger_debug(logger, messages, is_debug)
-
-    if !is_debug
-        return
-    end
-
-    if classname(messages)!='list'
-        messages=[messages]
-    end
-
-    messages=messages.concat(' ')
-
-    logger(messages)
-
-    var timestamp=tasmota.cmd('Time').find('Time')
-    
-    print(string.format('%s: %s',timestamp, messages))
-
-end
+import tools_logging as logging
 
 def get_mac()
 
@@ -73,7 +37,7 @@ end
 
 def read_url(url, retries, logger)
 
-    logger=get_logger_default(logger)
+    logger=logging.get_logger_default(logger)
 
     var client = webclient()
     client.begin(url)
@@ -87,7 +51,9 @@ def read_url(url, retries, logger)
 
   end
 
-def download_url(url, file_path, retries)
+def download_url(url, file_path, retries, logger)
+
+    logger=logging.get_logger_default(logger)
 
     retries=retries==nil?10:retries
 
@@ -96,7 +62,7 @@ def download_url(url, file_path, retries)
         return true
     except .. as exception
 
-        log(string.format('Error downloading URL "%s" (Code: %s). Retries remaining: %s.', url, exception, retries))        
+        logger(string.format('Error downloading URL "%s" (Code: %s). Retries remaining: %s.', url, exception, retries))
 
         retries-=1
         if !retries
@@ -199,7 +165,7 @@ end
 
 def update_tapp(name, url,path_module, logger)
 
-    logger=get_logger_default(logger)
+    logger=logging.get_logger_default(logger)
 
     logger(string.format('Starting %s update...', name))
 
@@ -217,7 +183,7 @@ end
 
 def get_latest_version(org,repo,logger)    
 
-    logger=get_logger_default(logger)
+    logger=logging.get_logger_default(logger)
 
 
     logger(string.format('Fetching %s/%s latest version...', org, repo))
@@ -242,9 +208,6 @@ end
 var mod = module(constants.NAME)
 mod.VERSION=constants.VERSION
 
-mod.get_logger=get_logger
-mod.logger_debug=logger_debug
-
 mod.get_mac=get_mac
 mod.get_mac_short=get_mac_short
 mod.get_mac_last_six=get_mac_last_six
@@ -253,6 +216,7 @@ mod.get_device_name=get_device_name
 
 mod.converter=converter
 mod.tuya=tuya
+mod.logging=logging
 
 mod.read_url=read_url
 mod.download_url=download_url
@@ -272,7 +236,7 @@ mod.get_latest_version=get_latest_version
 mod.get_current_version_tasmota=get_current_version_tasmota
 
 def autoexec()
-    log_tools("Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
+    logging.log_tools("Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
 end
 
 mod.autoexec=autoexec
