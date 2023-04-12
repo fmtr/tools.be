@@ -3,6 +3,7 @@ import tools_constants as constants
 import tools_converter as converter
 import tools_tuya as tuya
 import tools_logging as logging
+import tools_random as random
 
 def get_mac()
 
@@ -217,6 +218,7 @@ mod.get_device_name=get_device_name
 mod.converter=converter
 mod.tuya=tuya
 mod.logging=logging
+mod.random=random
 
 mod.read_url=read_url
 mod.download_url=download_url
