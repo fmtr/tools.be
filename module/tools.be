@@ -1,6 +1,7 @@
 import string
 import tools_constants as constants
 import tools_converter as converter
+import tools_tuya as tuya
 
 def get_logger(name)
 
@@ -251,6 +252,7 @@ mod.get_mac_last_six=get_mac_last_six
 mod.get_device_name=get_device_name
 
 mod.converter=converter
+mod.tuya=tuya
 
 mod.read_url=read_url
 mod.download_url=download_url
