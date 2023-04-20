@@ -183,26 +183,70 @@ def update_tapp(name, url,path_module, logger)
 
 end
 
-def get_latest_version(org,repo,logger)    
+def resolve_redirects(url)
 
-    logger=logging.get_logger_default(logger)
-
-
-    logger(string.format('Fetching %s/%s latest version...', org, repo))
-
-    var url=string.format(
-        'https://europe-west2-extreme-flux-351112.cloudfunctions.net/get_github_latest_release_version?org=%s&repo=%s',
-        org,
-        repo
-    )
-
-    var version=read_url(url)
-    if version
-        return version
-    else
-        logger(string.format('Failed reading %s/%s latest version from URL "%s".', org, repo, url))
-        return false
+    if !constants.WEB_CLIENT_SUPPORTS_REDIRECTS
+        raise 'runtime_error', 'Resolving redirects requires Tasmota >=12.5.0'
     end
+
+	var client = webclient()
+	client.set_follow_redirects(false)
+	client.collect_headers("Location")
+	client.begin(url)
+	var response = client.GET()
+	if response == 301 || response == 302
+	    url=client.get_header("Location")
+	elif response == 200
+	    url=url
+	else
+	    client.close()
+		raise 'connection_error','status: '+str(response)
+	end
+	client.close()
+	return url
+
+end
+
+def get_latest_release_tag_github(org,repo)
+
+	import string
+	var url=string.format("https://github.com/%s/%s/releases/latest",org,repo)
+	url=resolve_redirects(url)
+	return string.split(url,'/').pop()
+
+end
+
+def get_latest_version_github(org,repo)
+
+	import string
+	var version=get_latest_release_tag_github(org,repo)
+	for v: ['v','V']
+		version=string.replace(version,'v','')
+	end
+	return version
+
+end
+
+def update_tapp_github_asset(url, org, repo, asset_filename, path_module, logger)
+
+    if string.find(url,'http')==0
+        return update_tapp(repo, url, path_module, logger)
+    end
+
+    var version=url
+    path_module=path_module?path_module:('/'+asset_filename)
+    
+    if version==nil        
+        version=get_latest_version_github(org,repo)        
+    end
+
+    if string.find(version,'http')!=0
+        print('Version specified so will create a URL...')
+        version=string.format('https://github.com/%s/%s/releases/download/v%s/%s',org,repo,version,asset_filename)
+        print('Created URL',version)
+    end
+
+    return update_tapp(repo, version, path_module, logger)
 
 end
 
@@ -216,6 +260,7 @@ mod.get_mac_last_six=get_mac_last_six
 
 mod.get_device_name=get_device_name
 
+mod.constants=constants
 mod.converter=converter
 mod.tuya=tuya
 mod.logging=logging
@@ -235,9 +280,11 @@ mod.get_keys=get_keys
 mod.update_map=update_map
 
 mod.update_tapp=update_tapp
+mod.update_tapp_github_asset=update_tapp_github_asset
 
-mod.get_latest_version=get_latest_version
 mod.get_current_version_tasmota=get_current_version_tasmota
+mod.get_latest_release_tag_github=get_latest_release_tag_github
+mod.get_latest_version_github=get_latest_version_github
 
 def autoexec()
     logging.log_tools("Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
