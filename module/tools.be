@@ -70,7 +70,7 @@ def download_url(url, file_path, retries, logger)
         if !retries
             return false
         else
-            return download_url(url,file_path,retries)
+            return download_url(url,file_path,retries,logger)
         end
 
     end
@@ -169,9 +169,9 @@ def update_tapp(name, url,path_module, logger)
 
     logger=logging.get_logger_default(logger)
 
-    logger(string.format('Starting %s update...', name))
+    logger(string.format('Starting %s update from URL "%s"...', name, url))
 
-    var is_download_success=download_url(url,path_module)
+    var is_download_success=download_url(url,path_module,nil,logger)
     if is_download_success
         logger(string.format('Download %s update succeeded. Restarting...', name))
         tasmota.cmd('restart 1')        
@@ -207,22 +207,32 @@ def resolve_redirects(url)
 
 end
 
-def get_latest_release_tag_github(org,repo)
+def get_latest_release_tag_github(org,repo,logger)
+
+    logger=logging.get_logger_default(logger)
 
 	import string
 	var url=string.format("https://github.com/%s/%s/releases/latest",org,repo)
+
+    logger(string.format('Fetching latest GitHub release tag for %s/%s from URL: "%s"', org, repo, url))
+
 	url=resolve_redirects(url)
 	return string.split(url,'/').pop()
 
 end
 
-def get_latest_version_github(org,repo)
+def get_latest_version_github(org,repo,logger)
+
+    logger=logging.get_logger_default(logger)
 
 	import string
-	var version=get_latest_release_tag_github(org,repo)
+	var version=get_latest_release_tag_github(org,repo, logger)
 	for v: ['v','V']
 		version=string.replace(version,'v','')
 	end
+
+    logger(string.format('Found latest GitHub version for %s/%s from URL: %s', org, repo, version))
+
 	return version
 
 end
@@ -241,12 +251,11 @@ def update_tapp_github_asset(url, org, repo, asset_filename, path_module, logger
     end
 
     if string.find(version,'http')!=0
-        print('Version specified so will create a URL...')
-        version=string.format('https://github.com/%s/%s/releases/download/v%s/%s',org,repo,version,asset_filename)
-        print('Created URL',version)
+        url=string.format('https://github.com/%s/%s/releases/download/v%s/%s',org,repo,version,asset_filename)
+        logger(string.format('Update from GitHub Asset: Updating from specified version (%s) from URL: "%s"',version,url))        
     end
 
-    return update_tapp(repo, version, path_module, logger)
+    return update_tapp(repo, url, path_module, logger)
 
 end
 
