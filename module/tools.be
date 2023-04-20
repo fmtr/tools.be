@@ -247,7 +247,7 @@ def update_tapp_github_asset(url, org, repo, asset_filename, path_module, logger
     path_module=path_module?path_module:('/'+asset_filename)
     
     if version==nil        
-        version=get_latest_version_github(org,repo)        
+        version=get_latest_version_github(org,repo,logger)        
     end
 
     if string.find(version,'http')!=0
