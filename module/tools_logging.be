@@ -12,7 +12,7 @@ class Logger
 
     static var LEVEL_NAMES=['NONE','ERROR','INFO','DEBUG','DEBUG_MORE']
 
-    var prefix, level, do_print, level_names
+    var prefix, level, do_print
 
     static def get_level_name(level)
 
@@ -60,7 +60,7 @@ class Logger
         log(string.format('%s: %s',self.prefix,messages), level)
 
         if do_print
-            var timestamp=tasmota.cmd('Time').find('Time')
+            var timestamp=tasmota.time_str(tasmota.rtc()['local'])
             print(string.format('%s: %s: [%s] %s',timestamp,self.prefix,self.get_level_name(level),messages))
         end
 
