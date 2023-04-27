@@ -14,9 +14,15 @@ class Logger
 
     var prefix, level, do_print, level_names
 
+    static def get_level_name(level)
+
+        return Logger.LEVEL_NAMES[level]
+
+    end
+
     def init(prefix, level, do_print)
 
-        self.prefix=string.toupper(prefix?prefix:'t.b')
+        self.prefix=string.toupper(prefix?prefix:constants.NAME_SHORT)
         self.level=level
         self.do_print=do_print==nil?true:do_print
 
@@ -55,7 +61,7 @@ class Logger
 
         if do_print
             var timestamp=tasmota.cmd('Time').find('Time')
-            print(string.format('%s: %s: [%s] %s',timestamp,self.prefix,self.LEVEL_NAMES[level],messages))
+            print(string.format('%s: %s: [%s] %s',timestamp,self.prefix,self.get_level_name(level),messages))
         end
 
     end
