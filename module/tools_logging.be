@@ -1,46 +1,69 @@
 import string
 import tools_constants as constants
 
-def get_logger(name)
 
-    def logger(message)
-        log(string.format('%s: %s',string.toupper(name),message))
+class Logger
+
+    static var NONE=0    
+    static var ERROR=1
+    static var INFO=2
+    static var DEBUG=3    
+    static var DEBUG_MORE=4
+
+    static var LEVEL_NAMES=['NONE','ERROR','INFO','DEBUG','DEBUG_MORE']
+
+    var prefix, level, do_print, level_names
+
+    def init(prefix, level, do_print)
+
+        self.prefix=string.toupper(prefix?prefix:'t.b')
+        self.level=level
+        self.do_print=do_print==nil?true:do_print
+
     end
 
-    return logger
-
-end
-
-var log_tools=get_logger(constants.NAME_SHORT)
-
-def get_logger_default(logger)
-    return logger?logger:log_tools
-end
-
-
-def logger_debug(logger, messages, is_debug)
-
-    if !is_debug
+    def none(messages, do_print)
         return
     end
 
-    if classname(messages)!='list'
-        messages=[messages]
+    def error(messages, do_print)
+        return self.log(messages, Logger.ERROR, do_print)
     end
 
-    messages=messages.concat(' ')
+    def info(messages, do_print)
+        return self.log(messages, Logger.INFO, do_print)
+    end
 
-    logger(messages)
+    def debug(messages, do_print)
+        return self.log(messages, Logger.DEBUG, do_print)
+    end
 
-    var timestamp=tasmota.cmd('Time').find('Time')
+    def debug_more(messages, do_print)
+        return self.log(messages, Logger.DEBUG_MORE, do_print)
+    end
 
-    print(string.format('%s: %s',timestamp, messages))
+    def log(messages, level, do_print)
+
+        do_print=do_print==nil?self.do_print:do_print          
+
+        if classname(messages)!='list'
+            messages=[messages]
+        end
+    
+        messages=messages.concat(' ')        
+        log(string.format('%s: %s',self.prefix,messages), level)
+
+        if do_print
+            var timestamp=tasmota.cmd('Time').find('Time')
+            print(string.format('%s: %s: [%s] %s',timestamp,self.prefix,self.LEVEL_NAMES[level],messages))
+        end
+
+    end
 
 end
 
+
+
 var mod = module("tools_logging")
-mod.get_logger=get_logger
-mod.get_logger_default=get_logger_default
-mod.logger_debug=logger_debug
-mod.log_tools=log_tools
+mod.Logger=Logger
 return mod
