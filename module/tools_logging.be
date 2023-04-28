@@ -12,7 +12,7 @@ class Logger
 
     static var LEVEL_NAMES=['NONE','ERROR','INFO','DEBUG','DEBUG_MORE']
 
-    var prefix, level, do_print
+    var prefix, level, log_repl
 
     static def get_level_name(level)
 
@@ -20,37 +20,37 @@ class Logger
 
     end
 
-    def init(prefix, level, do_print)
+    def init(prefix, level, log_repl)
 
         self.prefix=string.toupper(prefix?prefix:constants.NAME_SHORT)
         self.level=level
-        self.do_print=do_print==nil?true:do_print
+        self.log_repl=log_repl==nil?true:log_repl
 
     end
 
-    def none(messages, do_print)
+    def none(messages, log_repl)
         return
     end
 
-    def error(messages, do_print)
-        return self.log(messages, Logger.ERROR, do_print)
+    def error(messages, log_repl)
+        return self.log(messages, self.ERROR, log_repl)
     end
 
-    def info(messages, do_print)
-        return self.log(messages, Logger.INFO, do_print)
+    def info(messages, log_repl)
+        return self.log(messages, self.INFO, log_repl)
     end
 
-    def debug(messages, do_print)
-        return self.log(messages, Logger.DEBUG, do_print)
+    def debug(messages, log_repl)
+        return self.log(messages, self.DEBUG, log_repl)
     end
 
-    def debug_more(messages, do_print)
-        return self.log(messages, Logger.DEBUG_MORE, do_print)
+    def debug_more(messages, log_repl)
+        return self.log(messages, self.DEBUG_MORE, log_repl)
     end
 
-    def log(messages, level, do_print)
+    def log(messages, level, log_repl)
 
-        do_print=do_print==nil?self.do_print:do_print          
+        log_repl=log_repl==nil?self.log_repl:log_repl          
 
         if classname(messages)!='list'
             messages=[messages]
@@ -59,8 +59,8 @@ class Logger
         messages=messages.concat(' ')        
         log(string.format('%s: %s',self.prefix,messages), level)
 
-        if do_print
-            var timestamp=tasmota.time_str(tasmota.rtc()['local'])
+        if log_repl
+            var timestamp=tasmota.time_str(tasmota.rtc()['utc'])
             print(string.format('%s: %s: [%s] %s',timestamp,self.prefix,self.get_level_name(level),messages))
         end
 
