@@ -6,6 +6,7 @@ import tools_tuya as tuya
 import tools_logging as logging
 import tools_random as random
 import tools_module
+import tools_callbacks
 
 def get_mac()
 
@@ -268,6 +269,7 @@ mod.tuya=tuya
 mod.logging=logging
 mod.random=random
 mod.module=tools_module
+mod.callbacks=tools_callbacks
 
 mod.read_url=read_url
 mod.download_url=download_url
