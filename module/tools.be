@@ -170,7 +170,7 @@ def update_tapp(name, url,path_module)
 
     var is_download_success=download_url(url,path_module,nil)
     if is_download_success
-        logger.logger.info(string.format('Download %s update succeeded. Restarting...', name))
+        logger.logger.info(string.format('Download %s update succeeded. File written to "%s". Restarting...', name, path_module))
         tasmota.cmd('restart 1')        
         return true
     else
@@ -252,8 +252,41 @@ def update_tapp_github_asset(url, org, repo, asset_filename, path_module)
 
 end
 
+def get_metadata(path)
+
+    import re
+    
+    var PATTERN_EXTRAS='(/([a-zA-Z0-9_,.-]+)(\\[([a-zA-Z_,-]+)?\\])?\\.[Tt][Aa][Pp][Pp])#'
+    
+    var match=re.searchall(PATTERN_EXTRAS, path)
+
+    if !size(match)
+        match=[[nil,nil,nil,nil]]
+    end
+
+    match=match[0]
+
+    var data={
+        'path': match[1],
+        'module': match[2],
+        'extras': match[3]==nil?nil:string.split(match[4],','),
+    }
+
+    return data
+
+end
+
+
+
+
+
 
 var mod = module(constants.NAME)
+
+mod.create_lazy_import_interface=tools_module.create_lazy_import_interface
+mod.get_metadata=get_metadata
+
+
 mod.VERSION=constants.VERSION
 
 mod.get_mac=get_mac
