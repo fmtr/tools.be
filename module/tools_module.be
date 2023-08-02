@@ -24,13 +24,9 @@ def create_module(mod,classes)
 
 end
 
-class DynamicClass
+class DynamicClassBase
 
-    var members
-
-    def init(members)
-        self.members = members
-    end
+    static var members    
 
     def setmember(name, value)
         self.members[name] = value
@@ -47,6 +43,20 @@ class DynamicClass
 
 end
 
+class DynamicClass: DynamicClassBase
+
+    var members
+
+    def init(members)
+        self.members = members
+    end
+
+end
+
+class LazyImportInterface: DynamicClassBase
+
+end
+
 def create_monad(name,object)
     var mod = module(name)
     mod.init = def (_) return object end
@@ -57,8 +67,14 @@ def create_lazy_import_interface(name,members)
     return create_monad(name, DynamicClass(members))
 end
 
+
+
 var mod = module("tools_module")
+
+mod.DynamicClass=DynamicClass
+mod.LazyImportInterface=LazyImportInterface
 mod.create_module=create_module
+mod.create_monad=create_monad
 mod.create_lazy_import_interface=create_lazy_import_interface
 
 return mod
