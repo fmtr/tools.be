@@ -8,29 +8,11 @@ import tools_random as random
 import tools_module
 import tools_lazy_import as lazy_import
 import tools_callbacks
+import tools_network
+import tools_web
+import tools_update
+import tools_iterator
 
-def get_mac()
-
-    var status_net=tasmota.cmd('status 5').find('StatusNET',{})
-    var mac_wifi=status_net.find('Mac', constants.MAC_EMPTY)
-    var mac_ethernet=status_net.find('Ethernet', {}).find('Mac', constants.MAC_EMPTY)
-
-    if [constants.MAC_EMPTY,nil].find(mac_wifi)==nil
-        return mac_wifi
-    elif [constants.MAC_EMPTY,nil].find(mac_ethernet)==nil
-        return mac_ethernet
-    end
-
-    raise "Couldn't get MAC address"
-end
-
-def get_mac_short()
-    return string.split(string.tolower(get_mac()),':').concat()
-end
-
-def get_mac_last_six()
-    return string.replace(string.split(get_mac(),':',3)[3],':','')
-end
 
 def get_device_name()
     var device_name=tasmota.cmd('DeviceName').find('DeviceName')
@@ -40,49 +22,13 @@ def get_device_name()
     return device_name
 end
 
-def read_url(url, retries)
-
-
-    var client = webclient()
-    client.begin(url)
-    var status=client.GET()
-    if status==200
-        return client.get_string()
-    else
-        logger.logger.error(string.format('Error reading "%s". Code %s', url, status))
-        return false
-    end
-
-  end
-
-def download_url(url, file_path, retries)    
-
-    retries=retries==nil?10:retries
-
-    try
-        tasmota.urlfetch(url,file_path)
-        return true
-    except .. as exception
-
-        logger.logger.error(string.format('Error downloading URL "%s" (Code: %s). Retries remaining: %s.', url, exception, retries))
-
-        retries-=1
-        if !retries
-            return false
-        else
-            return download_url(url,file_path,retries)
-        end
-
-    end
-end
-
 def get_topic()
     var topic=tasmota.cmd('topic').find('Topic')
     if !topic
         raise "Couldn't get topic"
     end
 
-    topic=string.replace(topic,'%06X',get_mac_last_six())
+    topic=string.replace(topic,'%06X',tools_network.get_mac_last_six())
 
     return topic
 end
@@ -99,46 +45,7 @@ def get_uptime_sec()
     return uptime
 end
 
-def to_chars(s)
-    var chars=[]
-    for i: 0..(size(s)-1)
-        chars.push(s[i])
-    end
-    return chars
-end
 
-def set_default(data,key,value)
-    if !data.contains(key)
-        data[key]=value
-    end
-    return data
-end
-
-def reverse_map(data)
-    var reversed={}
-    for key: data.keys()
-        reversed[data[key]]=key
-    end
-    return reversed
-end
-
-def get_keys(data)
-    var keys=[]
-    for key: data.keys()
-        keys.push(key)
-    end
-    return keys
-end
-
-def update_map(data,data_update)
-    for key: data_update.keys()
-        var value=data_update[key]
-        if value!=nil
-            data[key]=value
-        end
-    end
-    return data
-end
 
 def get_current_version_tasmota()
 
@@ -162,94 +69,6 @@ def get_current_version_tasmota()
     var build=string.replace(string.replace(sep,'(',''),')','')
 
     return string.format("%s", mmp)
-
-end
-
-def update_tapp(name, url,path_module)    
-
-    logger.logger.info(string.format('Starting %s update from URL "%s"...', name, url))
-
-    var is_download_success=download_url(url,path_module,nil)
-    if is_download_success
-        logger.logger.info(string.format('Download %s update succeeded. File written to "%s". Restarting...', name, path_module))
-        tasmota.cmd('restart 1')        
-        return true
-    else
-        logger.logger.error(string.format('Download %s update failed.', name))
-        return false
-    end    
-
-end
-
-def resolve_redirects(url)
-
-    if !constants.WEB_CLIENT_SUPPORTS_REDIRECTS
-        raise 'runtime_error', 'Resolving redirects requires Tasmota >=12.5.0'
-    end
-
-	var client = webclient()
-	client.set_follow_redirects(false)
-	client.collect_headers("Location")
-	client.begin(url)
-	var response = client.GET()
-	if response == 301 || response == 302
-	    url=client.get_header("Location")
-	elif response == 200
-	    url=url
-	else
-	    client.close()
-		raise 'connection_error','status: '+str(response)
-	end
-	client.close()
-	return url
-
-end
-
-def get_latest_release_tag_github(org,repo)    
-
-	import string
-	var url=string.format("https://github.com/%s/%s/releases/latest",org,repo)
-
-    logger.logger.info(string.format('Fetching latest GitHub release tag for %s/%s from URL: "%s"', org, repo, url))
-
-	url=resolve_redirects(url)
-	return string.split(url,'/').pop()
-
-end
-
-def get_latest_version_github(org,repo)   
-
-	import string
-	var version=get_latest_release_tag_github(org,repo)
-	for v: ['v','V']
-		version=string.replace(version,'v','')
-	end
-
-    logger.logger.info(string.format('Found latest GitHub version for %s/%s from URL: %s', org, repo, version))
-
-	return version
-
-end
-
-def update_tapp_github_asset(url, org, repo, asset_filename, path_module)
-
-    if string.find(url,'http')==0
-        return update_tapp(repo, url, path_module)
-    end
-
-    var version=url
-    path_module=path_module?path_module:('/'+asset_filename)
-    
-    if version==nil        
-        version=get_latest_version_github(org,repo)        
-    end
-
-    if string.find(version,'http')!=0
-        url=string.format('https://github.com/%s/%s/releases/download/v%s/%s',org,repo,version,asset_filename)
-        logger.logger.info(string.format('Update from GitHub Asset: Updating from specified version (%s) from URL: "%s"',version,url))
-    end
-
-    return update_tapp(repo, url, path_module)
 
 end
 
@@ -277,25 +96,15 @@ def get_metadata(path)
 
 end
 
-
-
-
-
-
 var mod = module(constants.NAME)
-
-mod.get_metadata=get_metadata
-
-mod.lazy_import=lazy_import
-
 mod.VERSION=constants.VERSION
 
-mod.get_mac=get_mac
-mod.get_mac_short=get_mac_short
-mod.get_mac_last_six=get_mac_last_six
-
+mod.get_metadata=get_metadata
+mod.lazy_import=lazy_import
+mod.network=tools_network
+mod.web=tools_web
+mod.update=tools_update
 mod.get_device_name=get_device_name
-
 mod.logger=logger
 mod.constants=constants
 mod.converter=converter
@@ -304,25 +113,13 @@ mod.logging=logging
 mod.random=random
 mod.module=tools_module
 mod.callbacks=tools_callbacks
-
-mod.read_url=read_url
-mod.download_url=download_url
-
 mod.get_topic=get_topic
 mod.get_topic_lwt=get_topic_lwt
 mod.get_uptime_sec=get_uptime_sec
-mod.to_chars=to_chars
-mod.set_default=set_default
-mod.reverse_map=reverse_map
-mod.get_keys=get_keys
-mod.update_map=update_map
 
-mod.update_tapp=update_tapp
-mod.update_tapp_github_asset=update_tapp_github_asset
+mod.iterator=tools_iterator
 
 mod.get_current_version_tasmota=get_current_version_tasmota
-mod.get_latest_release_tag_github=get_latest_release_tag_github
-mod.get_latest_version_github=get_latest_version_github
 
 def autoexec()
     logger.logger.info("Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
