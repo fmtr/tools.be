@@ -1,6 +1,6 @@
 import tools_converter as converter
 
-def tuya_send(type_id,dp_id,data)
+def send(type_id,dp_id,data)
 
     import string
 
@@ -13,5 +13,5 @@ def tuya_send(type_id,dp_id,data)
 end
 
 var mod = module("tools_tuya")
-mod.tuya_send=tuya_send
+mod.send=send
 return mod

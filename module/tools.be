@@ -6,6 +6,7 @@ import tools_tuya as tuya
 import tools_logging as logging
 import tools_random as random
 import tools_module
+import tools_lazy_import as lazy_import
 import tools_callbacks
 
 def get_mac()
@@ -283,9 +284,9 @@ end
 
 var mod = module(constants.NAME)
 
-mod.create_lazy_import_interface=tools_module.create_lazy_import_interface
 mod.get_metadata=get_metadata
 
+mod.lazy_import=lazy_import
 
 mod.VERSION=constants.VERSION
 
