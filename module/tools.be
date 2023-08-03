@@ -12,7 +12,7 @@ import tools_network
 import tools_web
 import tools_update
 import tools_iterator
-
+import tools_mqtt
 
 def get_device_name()
     var device_name=tasmota.cmd('DeviceName').find('DeviceName')
@@ -20,21 +20,6 @@ def get_device_name()
         raise "Couldn't get device name"
     end
     return device_name
-end
-
-def get_topic()
-    var topic=tasmota.cmd('topic').find('Topic')
-    if !topic
-        raise "Couldn't get topic"
-    end
-
-    topic=string.replace(topic,'%06X',tools_network.get_mac_last_six())
-
-    return topic
-end
-
-def get_topic_lwt()
-    return ['tele',get_topic(),'LWT'].concat('/')
 end
 
 def get_uptime_sec()
@@ -113,11 +98,11 @@ mod.logging=logging
 mod.random=random
 mod.module=tools_module
 mod.callbacks=tools_callbacks
-mod.get_topic=get_topic
-mod.get_topic_lwt=get_topic_lwt
+
 mod.get_uptime_sec=get_uptime_sec
 
 mod.iterator=tools_iterator
+mod.mqtt=tools_mqtt
 
 mod.get_current_version_tasmota=get_current_version_tasmota
 
