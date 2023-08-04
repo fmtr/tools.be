@@ -1,9 +1,8 @@
-var VERSION='0.1.7'
-
+import tools_version
 import introspect
 
 var mod = module("tools_constants")
-mod.VERSION=VERSION
+mod.VERSION=tools_version.VERSION
 mod.NAME='tools'
 mod.NAME_SHORT='t.b'
 mod.MAC_EMPTY='00:00:00:00:00:00'

@@ -1,8 +1,14 @@
 name: tools
 
+config:
+  auto_import: false
+  .channels:
+    development:
+      auto_import: true
+
 patches:
   - .channels:
       development:
         .type: Version
-        path: tools_constants.be
+        path: tools_version.be
         pattern: \bvar\s+VERSION\s*=\s*'{version}'
