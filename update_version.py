@@ -6,7 +6,7 @@ PATH_ROOT = Path(__file__).parent.absolute()
 ENCODING = 'UTF-8'
 PATTERN_VERSION = r'(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<pre>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?:\+(?P<build>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?'
 STEMS_MASKS = {
-    'module/tools_constants.be': r"var\s+VERSION\s*=\s*'({})'",
+    'module/tools_version.be': r"var\s+VERSION\s*=\s*'({})'",
 }
 VERSION = sys.argv[1]
 
