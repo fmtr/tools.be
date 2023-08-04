@@ -1,5 +1,5 @@
 def autoexec(metadata)
-    import tools_version    
+    import tools_version
 
     var IS_DEVELOPMENT=metadata['channel_id']=='development'
 

@@ -1,46 +1,40 @@
-import string
 import tools_constants as constants
-import tools_logger as logger
-import tools_converter as converter
-import tools_tuya as tuya
-import tools_logging as logging
-import tools_random as random
-import tools_module
-import tools_lazy_import as lazy_import
-import tools_callbacks
-import tools_network
-import tools_web
-import tools_update
-import tools_iterator
-import tools_mqtt
-import tools_platform
-import tools_packaging
+import tools_lazy_import
 
-var mod = module(constants.NAME)
-mod.VERSION=constants.VERSION
+print("tools.be",constants.VERSION, "compiling...")
 
-mod.lazy_import=lazy_import
-mod.network=tools_network
-mod.web=tools_web
-mod.update=tools_update
-mod.iterator=tools_iterator
-mod.mqtt=tools_mqtt
-mod.platform=tools_platform
-mod.packaging=tools_packaging
+class LazyImportInterfaceTools: tools_lazy_import.LazyImportInterface
 
-mod.logger=logger
-mod.constants=constants
-mod.converter=converter
-mod.tuya=tuya
-mod.logging=logging
-mod.random=random
-mod.module=tools_module
-mod.callbacks=tools_callbacks
+    static var NAME=constants.NAME
+    static var MEMBERS={
 
-def autoexec()
-    logger.logger.info("Successfully imported tools.be version "+constants.VERSION+". You can now access it using the `tools` module, e.g. in `autoexec.be`, Berry Console, etc.")
+        'VERSION':def (self) return constants.VERSION end,
+        'version':def (self) return constants.VERSION end,
+
+        'constants':def (self) import tools_constants return tools_constants end,
+        'lazy_import':def (self) import tools_lazy_import return tools_lazy_import end,
+
+        'network':def (self) import tools_network return tools_network end,
+        'web':def (self) import tools_web return tools_web end,
+        'update':def (self) import tools_update return tools_update end,
+        'iterator':def (self) import tools_iterator return tools_iterator end,
+        'mqtt':def (self) import tools_mqtt return tools_mqtt end,
+        'platform':def (self) import tools_platform return tools_platform end,
+        'logging':def (self) import tools_logging return tools_logging end,
+        'logger':def (self) import tools_logger return tools_logger end,
+        'converter':def (self) import tools_converter return tools_converter end,
+        'tuya':def (self) import tools_tuya return tools_tuya end,
+        'logging':def (self) import tools_logging return tools_logging end,
+        'random':def (self) import tools_random return tools_random end,
+        'module':def (self) import tools_module return tools_module end,
+        'callbacks':def (self) import tools_callbacks return tools_callbacks end,
+    }
+
+
 end
 
-mod.autoexec=autoexec
+var interface=LazyImportInterfaceTools().create_module()
 
-return mod
+print("tools.be",constants.VERSION, "compiled OK.")
+
+return interface

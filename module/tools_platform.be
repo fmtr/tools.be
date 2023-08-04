@@ -39,10 +39,15 @@ def get_current_version_tasmota()
 
 end
 
+def get_memory_kb()
+    return tasmota.cmd('Status 4').find('StatusMEM',{}).find('Heap','Unknown')
+end
+
 var mod = module("tools_platform")
 
 mod.get_device_name=get_device_name
 mod.get_uptime_sec=get_uptime_sec
+mod.get_memory_kb=get_memory_kb
 mod.get_current_version_tasmota=get_current_version_tasmota
 
 return mod
