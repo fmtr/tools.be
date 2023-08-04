@@ -1,10 +1,10 @@
 name: tools
 
-config:
-  auto_import: false
+autoexec:
+  import: false
   .channels:
     development:
-      auto_import: true
+      import: true
 
 patches:
   - .channels:
