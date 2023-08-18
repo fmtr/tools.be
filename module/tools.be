@@ -28,6 +28,7 @@ class LazyImportInterfaceTools: tools_lazy_import.LazyImportInterface
         'random':def (self) import tools_random return tools_random end,
         'module':def (self) import tools_module return tools_module end,
         'callbacks':def (self) import tools_callbacks return tools_callbacks end,
+        'compile':def (self) import tools_compile return tools_compile end,
     }
 
 

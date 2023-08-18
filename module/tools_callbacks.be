@@ -1,18 +1,54 @@
-import tools_logger
+import tools_logger, tools_iterator
 
 class Rule
 
-    var trigger, function, id, enabled
+    static var DATA_ARGS=['value_raw','trigger','message']
+    static var IS_JSON_DEFAULT=false
+    var trigger, function_raw, id, enabled, is_json
 
-    def init(trigger,function,id)
+    def init(trigger,function,id,is_json)
 
         self.trigger=trigger
-        self.function=function
+        self.function_raw=function
+        self.is_json=is_json!=nil?is_json:self.IS_JSON_DEFAULT
         self.id=self.get_id(id)
         self.enabled=false
         self.enable()
 
     end  
+
+    def get_data(values)
+
+        var data={}
+
+        if !size(self.DATA_ARGS)
+            return data
+        end
+
+        var value
+        for enumerated:tools_iterator.enumerate(self.DATA_ARGS)
+            data[enumerated.value]=tools_iterator.get_list(values,enumerated.i)
+        end
+
+        return data
+
+    end
+
+    def function(*args)
+
+        var data=self.get_data(args)
+        var value=data.find('value_raw')
+        
+        if self.is_json
+            import json
+            value=json.load(value)
+        end
+
+        var output=self.function_raw(value,data)
+
+        return output
+
+    end
 
     def get_id(id)
 
@@ -26,7 +62,7 @@ class Rule
     end
 
     def tostring()
-        return string.format('%s(%s,%s,%s)', classof(self), self.trigger,self.function,self.id)
+        return string.format('%s(%s,%s,%s)', classname(self), self.trigger,self.function,self.id)
     end
 
     def enable()
@@ -47,7 +83,7 @@ class Rule
 
     def _enable()
 
-        return tasmota.add_rule(self.trigger, self.function, self.id)
+        return tasmota.add_rule(self.trigger, /value_raw trigger message->self.function(value_raw,trigger,message), self.id)
 
     end
 
@@ -60,6 +96,9 @@ class Rule
 end
 
 class MqttSubscription: Rule
+
+    static var IS_JSON_DEFAULT=true
+    static var DATA_ARGS=['topic','code','value_raw','value_bytes']
     
     def get_id(id)
 
@@ -70,7 +109,7 @@ class MqttSubscription: Rule
     def _enable()
 
         import mqtt
-        return mqtt.subscribe(self.trigger, self.function)
+        return mqtt.subscribe(self.trigger, /topic code value_raw value_bytes->self.function(topic,code,value_raw,value_bytes))
 
     end
 
@@ -87,9 +126,11 @@ end
 
 class Cron: Rule
 
+    static var DATA_ARGS=['current','next']
+
     def _enable()
 
-        return tasmota.add_cron(self.trigger, self.function, self.id)
+        return tasmota.add_cron(self.trigger, /current next->self.function(current,next), self.id)
 
     end
 
@@ -109,9 +150,11 @@ end
 
 class Timer: Rule
 
+    static var DATA_ARGS=[]
+
     def _enable()
 
-        return tasmota.set_timer(self.trigger, self.function, self.id)
+        return tasmota.set_timer(self.trigger, /->self.function(), self.id)
 
     end
 
