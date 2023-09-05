@@ -19,7 +19,7 @@ class Rule
 
     def get_data(values)
 
-        var data={'registration':self}
+        var data={'registration':self, 'id':self.id}
 
         if !size(self.DATA_ARGS)
             return data
