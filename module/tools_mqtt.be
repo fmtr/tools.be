@@ -12,7 +12,18 @@ def get_topic()
 end
 
 def get_topic_lwt()
-    return ['tele',get_topic(),'LWT'].concat('/')
+
+    import string
+    var topic_mask=tasmota.cmd('FullTopic')['FullTopic']
+    var prefix=tasmota.cmd('prefix')['Prefix3']
+
+    var topic=topic_mask
+    topic=string.replace(topic,'%topic%',get_topic())
+    topic=string.replace(topic,'%prefix%',prefix)
+
+
+    return string.format('%s/LWT',topic)
+
 end
 
 def publish_json(topic,data,retain)
