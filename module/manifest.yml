@@ -9,7 +9,3 @@ autoexec:
   .channels:
   - import: true
     channel: development
-patches:
-- .type: Version
-  path: tools_version.be
-  pattern: \bvar\s+VERSION\s*=\s*'{version}'
