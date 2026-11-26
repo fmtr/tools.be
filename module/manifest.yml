@@ -1,18 +1,15 @@
 name: tools
-
 metadata:
-  version: 0.2.4
+  version: 1.0.0-alpha.0
   org_github: fmtr
   description: Shared Berry utilities for Tasmota.
   link_id: be/tools/tapp
-
 autoexec:
   import: false
   .channels:
-    - channel: development
-      import: true
-
+  - import: true
+    channel: development
 patches:
-  - .type: Version
-    path: tools_version.be
-    pattern: "\\bvar\\s+VERSION\\s*=\\s*'{version}'"
+- .type: Version
+  path: tools_version.be
+  pattern: \bvar\s+VERSION\s*=\s*'{version}'
