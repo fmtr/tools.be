@@ -1,6 +1,6 @@
 name: tools
 metadata:
-  version: 1.0.0-alpha.1
+  version: 1.0.0-alpha.2
   org_github: fmtr
   description: Shared Berry utilities for Tasmota.
   link_id: be/tools/tapp
