@@ -12,6 +12,7 @@ class LazyImportInterfaceTools: tools_lazy_import.LazyImportInterface
         'version':def (self) return constants.VERSION end,
 
         'constants':def (self) import tools_constants return tools_constants end,
+        'config':def (self) import tools_config return tools_config end,
         'lazy_import':def (self) import tools_lazy_import return tools_lazy_import end,
 
         'network':def (self) import tools_network return tools_network end,
@@ -29,6 +30,8 @@ class LazyImportInterfaceTools: tools_lazy_import.LazyImportInterface
         'module':def (self) import tools_module return tools_module end,
         'callbacks':def (self) import tools_callbacks return tools_callbacks end,
         'compile':def (self) import tools_compile return tools_compile end,
+        'packaging':def (self) import tools_packaging return tools_packaging end,
+        'testing':def (self) import tools_testing return tools_testing end,
     }
 
 

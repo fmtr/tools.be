@@ -1,6 +1,17 @@
 import tools_constants as constants
 import tools_logger as logger
 
+def resolve_path(url, file_path)
+    import string
+    if file_path == nil
+        file_path = string.split(url, '/').pop()
+        if size(file_path) == 0
+            file_path = 'index.html'
+        end
+    end
+    return file_path
+end
+
 def read_url(url, retries)
 
     var client = webclient()
@@ -71,15 +82,7 @@ class Downloader
 
 		self.url=url
 
-		if path==nil
-		  import string
-		  path = string.split(url,'/').pop()
-		  if size(path) == 0
-			path = 'index.html'   # fallback in case you fetch a root file
-		  end
-		end
-
-		self.path=path
+		self.path=resolve_path(url,path)
 		self.tries=tries?tries:10
 		self.cb_success=cb_success?cb_success:/->nil
 		self.cb_failure=cb_failure?cb_failure:/->nil
@@ -156,6 +159,7 @@ end
 
 var mod = module("tools_web")
 
+mod.resolve_path=resolve_path
 mod.read_url=read_url
 mod.download_url=download_url
 mod.resolve_redirects=resolve_redirects

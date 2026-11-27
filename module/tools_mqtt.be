@@ -20,7 +20,9 @@ def get_topic_lwt()
     var topic=topic_mask
     topic=string.replace(topic,'%topic%',get_topic())
     topic=string.replace(topic,'%prefix%',prefix)
-
+    while string.endswith(topic,'/')
+        topic=topic[0..(size(topic)-2)]
+    end
 
     return string.format('%s/LWT',topic)
 
