@@ -14,7 +14,7 @@ TAPP_METADATA['tools']={
     'path': tasmota.wd,
     'import': false,
     'channel_id': nil,
-    'version': '1.0.0-alpha.3',
+    'version': '1.0.0-alpha.4',
 }
 
 if TAPP_METADATA['tools']['import']
